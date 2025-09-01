@@ -1,140 +1,140 @@
 # 📈 Stock & ETF Analyzer
 
 ## Overview
-**Stock & ETF Analyzer** is a web-based application for analyzing U.S. stocks and ETFs (NASDAQ and NYSE).  
-It provides real-time data, technical analysis, and simple recommendations to help users explore market trends.  
+**Stock & ETF Analyzer** is a web application that analyzes U.S. stocks and ETFs (NASDAQ & NYSE) using data from the **Yahoo Finance API**.  
+It provides real-time quotes, technical indicators, and simple recommendations to help users explore market trends.  
 
-⚠️ **Disclaimer:** This project is for **educational purposes only** and **not financial or investment advice**.  
-
----
-
-## How to Use
-
-### 1. Search for Stocks
-**Method 1: Manual Input**
-1. Enter the **stock symbol** (e.g., `AAPL`, `GOOGL`, `TSLA`) in the search box.  
-2. Select the stock market (All/NASDAQ/NYSE/AMEX/OTC) – *optional*.  
-3. Click **"🔍 Analyze"** or press Enter.  
-
-**Method 2: Quick Click Popular Stocks**
-- Select from popular chips at the bottom:  
-  - **Tech Stocks:** AAPL, GOOGL, MSFT, TSLA, NVDA  
-  - **ETFs:** SPY, QQQ, VOO, VTI  
+⚠️ **Disclaimer:**  
+- This project is for **educational purposes only**.  
+- **This is not financial or investment advice.**  
+- Always do your own research and consult a licensed advisor before investing.  
 
 ---
 
-### 2. Reading Results
-
-#### Basic Info
-- **Company name & symbol**  
-- **Current price** (green = up, red = down)  
-- **Change** (absolute and %)  
-- **Market Cap**  
-- **Volume**  
-- **Daily Range & 52-week range**  
-
-#### Technical Analysis
-- **EMA 20/50**: Exponential Moving Averages  
-- **RSI**: Relative Strength Index (30 = oversold, 70 = overbought)  
-- **Support & Resistance levels**  
-
-#### Recommendations
-System provides 5 levels:  
-- 🟢 **Strong Buy**  
-- 🟢 **Buy**  
-- 🟡 **Hold**  
-- 🔴 **Sell**  
-- 🔴 **Strong Sell**  
-
-#### Target Price
-- **Target Price**: expected upside level  
-- **Stop Loss**: suggested downside cutoff  
+## Features
+- 🔍 Search stocks and ETFs by symbol (e.g., `AAPL`, `GOOGL`, `TSLA`, `SPY`)  
+- 📊 Real-time stock & ETF data from Yahoo Finance  
+- 📈 Technical indicators:  
+  - EMA (Exponential Moving Average)  
+  - RSI (Relative Strength Index)  
+  - Support & Resistance levels  
+- 🟢🔴 Buy/Hold/Sell recommendations  
+- 📉 Target price and stop loss levels  
+- ⚡ Backend caching for faster responses  
+- 🐍 Python helper script for advanced stock analysis  
 
 ---
 
-### 3. Price Chart
-Charts show:  
-- **Price line** (blue)  
-- **EMA 20** (green dashed line)  
-- **Support line** (red dashed line)  
-- **Resistance line** (orange dashed line)  
+## Installation & Setup
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/stock-etf-analyzer.git
+cd stock-etf-analyzer
+```
 
 ---
 
-## Recommended Stocks & ETFs
+### 2. Backend (Node.js + Express)
 
-### 📊 Popular Stocks
-| Symbol | Company | Category |
-|--------|---------|----------|
-| AAPL   | Apple Inc. | Technology |
-| GOOGL  | Alphabet Inc. | Technology |
-| MSFT   | Microsoft Corp. | Technology |
-| TSLA   | Tesla Inc. | EV/Automotive |
-| AMZN   | Amazon.com Inc. | E-Commerce |
-| NVDA   | NVIDIA Corp. | Semiconductors |
-| META   | Meta Platforms | Social Media |
+#### Install dependencies
+```bash
+npm install
+```
 
-### 📈 Popular ETFs
-| Symbol | ETF Name | Description |
-|--------|----------|-------------|
-| SPY    | SPDR S&P 500 ETF | S&P 500 |
-| QQQ    | Invesco QQQ Trust | NASDAQ 100 |
-| VOO    | Vanguard S&P 500 ETF | Low-cost S&P 500 |
-| VTI    | Vanguard Total Stock Market | Entire U.S. market |
+#### Run backend server
+```bash
+npm start
+```
 
----
+For development (with auto-reload using nodemon):
+```bash
+npm run dev
+```
 
-## Buy & Sell Signals
-
-### Buy Signals
-- Price above EMA 20/50  
-- RSI < 30 (oversold)  
-- Price near support  
-- Uptrend confirmation  
-
-### Sell Signals
-- Price below EMA  
-- RSI > 70 (overbought)  
-- Price near resistance  
-- Downtrend confirmation  
+By default, the server will start at:
+```
+http://localhost:3000
+```
 
 ---
 
-## Limitations
-- **CORS Policy**: May cause issues in some browsers.  
-- **API Limitations**: Some data may be incomplete.  
-- **Data Latency**: Not guaranteed to be real-time.  
+### 3. Python Script (fetch_stock.py)
+
+This project includes a Python helper script to fetch and analyze stock data directly.  
+
+#### Install dependencies
+```bash
+pip install yfinance pandas pandas_ta
+```
+
+#### Run the script
+```bash
+python fetch_stock.py AAPL
+```
+
+#### Example output (JSON)
+```json
+{
+  "s": "ok",
+  "name": "Apple Inc.",
+  "marketCap": 2750000000000,
+  "rsi": 45.7,
+  "ma50": 172.34,
+  "support": 165.2,
+  "resistance": 179.8,
+  "recommendations": {
+    "recommendation": "hold"
+  },
+  "targetPrice": 190.0,
+  "recommendationText": "near 50-day moving average"
+}
+```
+
+---
+
+## Example Usage
+
+### Node.js Backend (API request)
+```bash
+curl http://localhost:3000/api/stock/AAPL
+```
+
+Example response:
+```json
+{
+  "symbol": "AAPL",
+  "price": 174.36,
+  "change": -0.52,
+  "rsi": 48.2,
+  "ema20": 176.4,
+  "support": 170.0,
+  "resistance": 180.5,
+  "recommendation": "hold"
+}
+```
 
 ---
 
 ## Tech Stack
-- **Frontend**: HTML5, CSS3, JavaScript (ES6)  
-- **Charts**: Chart.js  
-- **API**: Yahoo Finance API  
-- **Requests**: Axios  
+- **Backend**: Node.js, Express.js  
+- **Python Script**: yfinance, pandas, pandas_ta  
+- **Frontend (Optional)**: HTML, CSS, JavaScript, Chart.js  
+- **API**: Yahoo Finance  
 
 ---
 
-## Troubleshooting
-
-### Data not loading
-1. Check internet connection.  
-2. Try another browser.  
-3. Verify the symbol.  
-4. Refresh and retry.  
-
-### Chart not displaying
-1. Wait until data fully loads.  
-2. Check browser console (F12).  
-3. Try another stock.  
+## Limitations
+- Data may not always be real-time due to API restrictions.  
+- API rate limits may cause incomplete data.  
+- CORS policy may require running via backend server.  
 
 ---
 
 ## ⚠️ Disclaimer
-- This project is for **educational purposes only**.  
-- **This is not financial or investment advice.**  
-- Always do your own research and consult with a financial advisor before making investment decisions.  
-- Investing in the stock market involves risks.  
+This project is for **educational purposes only**.  
+It is **not financial or investment advice**.  
+Use this tool at your own risk.  
 
 ---
 ✨ *Learn responsibly. Invest wisely.* ✨

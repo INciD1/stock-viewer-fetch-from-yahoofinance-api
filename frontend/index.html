@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📈 Stock & ETF Analyzer Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      --error-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      --dark-gradient: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+      --light-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    }
+    
+    body { 
+      font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-x: hidden;
+    }
+    
+    /* Background Animations */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    
+    .animated-bg::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg at 50% 50%, #667eea 0deg, #764ba2 120deg, #f093fb 240deg, #667eea 360deg);
+      animation: rotate 20s linear infinite;
+      opacity: 0.1;
+    }
+    
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Floating Orbs */
+    .floating-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      animation: float-orb 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    .orb-1 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+      top: 10%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+    
+    .orb-2 {
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(240, 147, 251, 0.2) 0%, transparent 70%);
+      top: 60%;
+      right: 15%;
+      animation-delay: -4s;
+    }
+    
+    .orb-3 {
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(67, 233, 123, 0.25) 0%, transparent 70%);
+      bottom: 20%;
+      left: 60%;
+      animation-delay: -2s;
+    }
+    
+    @keyframes float-orb {
+      0%, 100% { 
+        transform: translateY(0px) translateX(0px) scale(1);
+      }
+      25% { 
+        transform: translateY(-30px) translateX(20px) scale(1.1);
+      }
+      50% { 
+        transform: translateY(20px) translateX(-15px) scale(0.9);
+      }
+      75% { 
+        transform: translateY(-10px) translateX(10px) scale(1.05);
+      }
+    }
+    
+    /* Light Mode Styles */
+    .light-mode {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #ffecd2 50%, #fcb69f 75%, #ffecd2 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      color: #2d3748;
+    }
+    
+    /* Dark Mode Styles */
+    .dark-mode {
+      background: var(--dark-gradient);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      color: #e2e8f0;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    /* Glass Effect Enhanced */
+    .glass-effect {
+      backdrop-filter: blur(20px) saturate(150%);
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.15) 0%, 
+        rgba(255, 255, 255, 0.05) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.37),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .dark-mode .glass-effect {
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.08) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Card Styles */
+    .neon-card {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .neon-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: all 0.6s ease;
+    }
+    
+    .neon-card:hover::before {
+      left: 100%;
+    }
+    
+    .neon-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 
+        0 20px 60px rgba(102, 126, 234, 0.3),
+        0 0 0 1px rgba(102, 126, 234, 0.2);
+    }
+    
+    /* Button Styles */
+    .btn-glow {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 15px;
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-glow::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: all 0.5s ease;
+    }
+    
+    .btn-glow:hover::before {
+      left: 100%;
+    }
+    
+    .btn-glow:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    }
+    
+    /* Theme Toggle Enhanced */
+    .theme-toggle {
+      position: relative;
+      width: 80px;
+      height: 40px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--primary-gradient);
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .theme-toggle-slider {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dark-mode .theme-toggle-slider {
+      transform: translateX(40px);
+      background: #2d3748;
+      color: #fbbf24;
+    }
+    
+    .dark-mode .theme-toggle {
+      background: linear-gradient(135deg, #2d3748, #4a5568);
+    }
+    
+    /* Input Styles */
+    .input-glow {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid transparent;
+      border-radius: 15px;
+      color: #e2e8f0;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .input-glow:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+    }
+    
+    .input-glow::placeholder {
+      color: rgba(226, 232, 240, 0.6);
+    }
+    
+    /* Stock Link Styles */
+    .stock-link {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: block;
+      margin: 6px 0;
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .stock-link:hover {
+      background: var(--primary-gradient);
+      transform: translateX(8px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      color: white;
+    }
+    
+    /* Pulse Effect */
+    .pulse-glow {
+      animation: pulse-glow 2s infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+      50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.6); }
+      100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+    }
+    
+    /* Data Display */
+    .data-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+    
+    .positive {
+      background: var(--success-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+        1px -1px 0 rgba(0, 0, 0, 0.8),
+        -1px 1px 0 rgba(0, 0, 0, 0.8),
+        1px 1px 0 rgba(0, 0, 0, 0.8);
+    }
+    
+    .negative {
+      background: var(--error-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+        1px -1px 0 rgba(0, 0, 0, 0.8),
+        -1px 1px 0 rgba(0, 0, 0, 0.8),
+        1px 1px 0 rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Loading Animation */
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(102, 126, 234, 0.2);
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Gradient Text */
+    .gradient-text {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .dark-mode .gradient-text {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Chart Container */
+    .chart-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .orb-1, .orb-2, .orb-3 {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .neon-card {
+        margin: 10px 0;
+      }
+      
+      .theme-toggle {
+        width: 60px;
+        height: 30px;
+      }
+      
+      .theme-toggle-slider {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+      }
+      
+      .dark-mode .theme-toggle-slider {
+        transform: translateX(30px);
+      }
+    }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-gradient);
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #5a67d8, #6b46c1);
+    }
+  </style>
+</head>
+<body class="light-mode min-h-screen">
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="floating-orb orb-1"></div>
+    <div class="floating-orb orb-2"></div>
+    <div class="floating-orb orb-3"></div>
+  </div>
+
+  <div class="container mx-auto p-6 max-w-7xl relative">
+    <!-- Header Section -->
+    <header class="neon-card p-8 mb-8">
+      <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+        <div class="text-center lg:text-left">
+          <h1 class="text-5xl font-bold gradient-text mb-4">
+            <i class="fas fa-chart-line mr-4"></i>Stock & ETF Analyzer Pro
+          </h1>
+          <p class="text-xl opacity-80 font-medium">
+            🚀 วิเคราะห์หุ้นและ ETF จากตลาดหุ้นอเมริกา NASDAQ, NYSE, AMEX, OTC, BATS
+          </p>
+          <div class="flex items-center justify-center lg:justify-start mt-4 space-x-4">
+            <div class="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+              <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span>Live Data from YahooFinance</span>
+            </div>
+            <div class="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+              Realtime Analysis
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col items-center space-y-4">
+          <p class="text-sm opacity-70 text-center">
+            <i class="fas fa-clock mr-2"></i>Last updated: 05:58 PM +07, July 19, 2025
+          </p>
+          <div class="theme-toggle pulse-glow" id="theme-toggle">
+            <div class="theme-toggle-slider">
+              <i class="fas fa-sun"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search Section -->
+    <div class="glass-effect rounded-xl p-6 mb-8">
+      <div class="flex flex-wrap gap-4 items-center justify-center">
+        <select id="market-select" class="glass-effect border-0 p-3 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <option value="all">🌐 ทุกตลาด</option>
+          <option value="NASDAQ">📊 NASDAQ</option>
+          <option value="NYSE">🏛️ NYSE</option>
+          <option value="AMEX">🇺🇸 AMEX</option>
+          <option value="OTC">💼 OTC</option>
+          <option value="BATS">⚡ BATS</option>
+        </select>
+        <input 
+          id="stock-input" 
+          type="text" 
+          placeholder="กรุณากรอก Ticker หุ้น (เช่น AAPL, QQQM)" 
+          class="glass-effect border-0 p-3 rounded-lg w-80 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+        <button id="analyze-btn" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold">
+          <i class="fas fa-search mr-2"></i>🔍 วิเคราะห์
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Animation -->
+    <div id="loading" class="hidden text-center my-8">
+      <div class="glass-effect rounded-xl p-8">
+        <div class="pulse-animation">
+          <i class="fas fa-spinner fa-spin text-4xl mb-4 text-blue-400"></i>
+          <p class="text-xl">🔄 กำลังโหลดข้อมูล...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Cards Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Stock Info Card -->
+      <div class="card-gradient-light dark:card-gradient-dark rounded-xl p-6 hover-scale">
+        <h2 class="text-2xl font-bold mb-4 gradient-text">
+          <i class="fas fa-chart-bar mr-2"></i>📊 ข้อมูลหุ้น
+        </h2>
+        <div class="space-y-3">
+          <p class="text-xl font-semibold" id="stock-name">...</p>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">ราคาล่าสุด:</span>
+            <span class="text-xl font-bold text-green-500" id="latest-price">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">ปริมาณการซื้อขาย:</span>
+            <span class="font-semibold" id="volume">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">มูลค่าตลาด:</span>
+            <span class="font-semibold" id="market-cap">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">P/E Ratio:</span>
+            <span class="font-semibold" id="pe-ratio">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendation Card -->
+      <div class="card-gradient-light dark:card-gradient-dark rounded-xl p-6 hover-scale">
+        <h2 class="text-2xl font-bold mb-4 gradient-text">
+          <i class="fas fa-lightbulb mr-2"></i>💡 คำแนะนำการลงทุน
+        </h2>
+        <div class="space-y-3">
+          <p class="text-sm opacity-80" id="recommendation-text">...</p>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">สัญญาณซื้อ:</span>
+            <span class="text-2xl" id="buy">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">สัญญาณถือ:</span>
+            <span class="text-2xl" id="hold">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">สัญญาณขาย:</span>
+            <span class="text-2xl" id="sell">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">ราคาเป้าหมาย:</span>
+            <span class="font-bold text-blue-500" id="target-price">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Analysis Card -->
+      <div class="card-gradient-light dark:card-gradient-dark rounded-xl p-6 hover-scale">
+        <h2 class="text-2xl font-bold mb-4 gradient-text">
+          <i class="fas fa-chart-line mr-2"></i>📉 การวิเคราะห์ทางเทคนิค
+        </h2>
+        <div class="space-y-3">
+          <p class="text-sm opacity-80" id="technical-text">...</p>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">RSI:</span>
+            <span class="font-semibold" id="rsi">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">Moving Average (50):</span>
+            <span class="font-semibold" id="ma50">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">แนวรับ:</span>
+            <span class="font-semibold text-red-500" id="support">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="opacity-80">แนวต้าน:</span>
+            <span class="font-semibold text-green-500" id="resistance">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="card-gradient-light dark:card-gradient-dark rounded-xl p-6 mb-8 hover-scale">
+      <h2 class="text-2xl font-bold mb-6 gradient-text">
+        <i class="fas fa-chart-area mr-2"></i>📊 กราฟราคาหุ้น
+      </h2>
+      <div class="h-96">
+        <canvas id="stock-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Stock Categories -->
+    <div class="card-gradient-light dark:card-gradient-dark rounded-xl p-6">
+      <h2 class="text-3xl font-bold mb-6 gradient-text text-center">
+        <i class="fas fa-flag-usa mr-2"></i>🇺🇸 หุ้นและ ETF ในตลาดอเมริกา
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-effect rounded-xl p-4">
+          <h3 class="text-lg font-bold mb-4 text-center">
+            <i class="fas fa-microchip mr-2"></i>📊 Large Cap Tech (NASDAQ)
+          </h3>
+          <ul class="space-y-1">
+            <li><a href="#" class="stock-link" data-symbol="AAPL"><i class="fab fa-apple mr-2"></i>AAPL - Apple</a></li>
+            <li><a href="#" class="stock-link" data-symbol="GOOGL"><i class="fab fa-google mr-2"></i>GOOGL - Alphabet</a></li>
+            <li><a href="#" class="stock-link" data-symbol="MSFT"><i class="fab fa-microsoft mr-2"></i>MSFT - Microsoft</a></li>
+            <li><a href="#" class="stock-link" data-symbol="NVDA"><i class="fas fa-tv mr-2"></i>NVDA - NVIDIA</a></li>
+            <li><a href="#" class="stock-link" data-symbol="TSLA"><i class="fas fa-car mr-2"></i>TSLA - Tesla</a></li>
+          </ul>
+        </div>
+        
+        <div class="glass-effect rounded-xl p-4">
+          <h3 class="text-lg font-bold mb-4 text-center">
+            <i class="fas fa-university mr-2"></i>🏦 Blue Chip (NYSE)
+          </h3>
+          <ul class="space-y-1">
+            <li><a href="#" class="stock-link" data-symbol="BRK-A"><i class="fas fa-chart-line mr-2"></i>BRK-A - Berkshire A</a></li>
+            <li><a href="#" class="stock-link" data-symbol="BRK-B"><i class="fas fa-chart-line mr-2"></i>BRK-B - Berkshire B</a></li>
+            <li><a href="#" class="stock-link" data-symbol="JPM"><i class="fas fa-piggy-bank mr-2"></i>JPM - JPMorgan</a></li>
+            <li><a href="#" class="stock-link" data-symbol="JNJ"><i class="fas fa-pills mr-2"></i>JNJ - Johnson & Johnson</a></li>
+            <li><a href="#" class="stock-link" data-symbol="WMT"><i class="fas fa-shopping-cart mr-2"></i>WMT - Walmart</a></li>
+          </ul>
+        </div>
+        
+        <div class="glass-effect rounded-xl p-4">
+          <h3 class="text-lg font-bold mb-4 text-center">
+            <i class="fas fa-chart-pie mr-2"></i>📈 Major ETFs
+          </h3>
+          <ul class="space-y-1">
+            <li><a href="#" class="stock-link" data-symbol="SPY"><i class="fas fa-trophy mr-2"></i>SPY - S&P 500</a></li>
+            <li><a href="#" class="stock-link" data-symbol="QQQ"><i class="fas fa-rocket mr-2"></i>QQQ - Nasdaq 100</a></li>
+            <li><a href="#" class="stock-link" data-symbol="IWM"><i class="fas fa-gem mr-2"></i>IWM - Russell 2000</a></li>
+            <li><a href="#" class="stock-link" data-symbol="VTI"><i class="fas fa-globe mr-2"></i>VTI - Total Market</a></li>
+            <li><a href="#" class="stock-link" data-symbol="VOO"><i class="fas fa-star mr-2"></i>VOO - S&P 500</a></li>
+          </ul>
+        </div>
+        
+        <div class="glass-effect rounded-xl p-4">
+          <h3 class="text-lg font-bold mb-4 text-center">
+            <i class="fas fa-fire mr-2"></i>🔥 Sector ETFs
+          </h3>
+          <ul class="space-y-1">
+            <li><a href="#" class="stock-link" data-symbol="XLK"><i class="fas fa-laptop-code mr-2"></i>XLK - Technology</a></li>
+            <li><a href="#" class="stock-link" data-symbol="XLF"><i class="fas fa-dollar-sign mr-2"></i>XLF - Financial</a></li>
+            <li><a href="#" class="stock-link" data-symbol="XLE"><i class="fas fa-oil-can mr-2"></i>XLE - Energy</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('stock-chart').getContext('2d');
+    let stockChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'ราคาหุ้น',
+          data: [],
+          borderColor: 'rgb(102, 126, 234)',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: 'rgba(255, 255, 255, 0.8)'
+            }
+          }
+        },
+        scales: {
+          x: { 
+            title: { display: true, text: 'วันที่', color: 'rgba(255, 255, 255, 0.8)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          },
+          y: { 
+            title: { display: true, text: 'ราคา', color: 'rgba(255, 255, 255, 0.8)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          }
+        }
+      }
+    });
+
+    async function fetchStockData(symbol) {
+      document.getElementById('loading').classList.remove('hidden');
+      try {
+        const response = await axios.get(`/api/stock/${symbol}`);
+        const data = response.data;
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        // อัปเดตข้อมูลหุ้น
+        document.getElementById('stock-name').textContent = data.name || 'Unknown';
+        document.getElementById('latest-price').textContent = `$${data.c[data.c.length - 1]?.toFixed(2)}` || '-';
+        document.getElementById('volume').textContent = data.v[data.v.length - 1]?.toLocaleString() || '-';
+        document.getElementById('market-cap').textContent = data.marketCap ? `$${(data.marketCap/1e9).toFixed(2)}B` : '-';
+        document.getElementById('pe-ratio').textContent = data.peRatio?.toFixed(2) || '-';
+
+        // อัปเดตคำแนะนำ
+        document.getElementById('recommendation-text').textContent = data.recommendationText || '...';
+        const recommendation = data.recommendations?.recommendation || '';
+        document.getElementById('buy').textContent = recommendation.includes('buy') ? '🟢' : '⚪';
+        document.getElementById('hold').textContent = recommendation.includes('hold') ? '🟡' : '⚪';
+        document.getElementById('sell').textContent = recommendation.includes('sell') ? '🔴' : '⚪';
+        document.getElementById('target-price').textContent = data.targetPrice ? `$${data.targetPrice.toFixed(2)}` : '-';
+
+        // อัปเดตการวิเคราะห์ทางเทคนิค
+        document.getElementById('technical-text').textContent = data.technicalText || '...';
+        document.getElementById('rsi').textContent = data.rsi?.toFixed(2) || '-';
+        document.getElementById('ma50').textContent = data.ma50 ? `$${data.ma50.toFixed(2)}` : '-';
+        document.getElementById('support').textContent = data.support ? `$${data.support.toFixed(2)}` : '-';
+        document.getElementById('resistance').textContent = data.resistance ? `$${data.resistance.toFixed(2)}` : '-';
+
+        // อัปเดตกราฟ
+        const labels = data.t.map(timestamp => new Date(timestamp * 1000).toLocaleDateString());
+        stockChart.data.labels = labels;
+        stockChart.data.datasets[0].data = data.c;
+        stockChart.update();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('เกิดข้อผิดพลาดในการดึงข้อมูล');
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('analyze-btn').addEventListener('click', () => {
+      const symbol = document.getElementById('stock-input').value.toUpperCase();
+      if (symbol) fetchStockData(symbol);
+    });
+
+    document.getElementById('stock-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const symbol = e.target.value.toUpperCase();
+        if (symbol) fetchStockData(symbol);
+      }
+    });
+
+    document.querySelectorAll('.stock-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const symbol = e.target.dataset.symbol || e.target.closest('.stock-link').dataset.symbol;
+        document.getElementById('stock-input').value = symbol;
+        fetchStockData(symbol);
+      });
+    });
+
+    // Theme Toggle
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const body = document.body;
+      const slider = document.querySelector('.theme-toggle-slider i');
+      
+      if (body.classList.contains('dark-mode')) {
+        // Switch to light mode
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        slider.className = 'fas fa-sun';
+      } else {
+        // Switch to dark mode
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        slider.className = 'fas fa-moon';
+      }
+
+      // Update chart colors based on theme
+      const isDark = body.classList.contains('dark-mode');
+      const textColor = isDark ? 'rgba(226, 232, 240, 0.8)' : 'rgba(26, 32, 44, 0.8)';
+      const tickColor = isDark ? 'rgba(226, 232, 240, 0.6)' : 'rgba(26, 32, 44, 0.6)';
+      const gridColor = isDark ? 'rgba(226, 232, 240, 0.1)' : 'rgba(26, 32, 44, 0.1)';
+
+      stockChart.options.plugins.legend.labels.color = textColor;
+      stockChart.options.scales.x.title.color = textColor;
+      stockChart.options.scales.y.title.color = textColor;
+      stockChart.options.scales.x.ticks.color = tickColor;
+      stockChart.options.scales.y.ticks.color = tickColor;
+      stockChart.options.scales.x.grid.color = gridColor;
+      stockChart.options.scales.y.grid.color = gridColor;
+      stockChart.update();
+    });
+
+    // Initialize with default theme
+    document.body.classList.add('light-mode');
+  </script>
+</body>
+</html>

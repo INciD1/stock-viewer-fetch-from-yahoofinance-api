@@ -1,0 +1,25 @@
+{
+  "name": "stock-analyzer-backend",
+  "version": "1.0.0",
+  "description": "Stock and ETF Analyzer Backend with Yahoo Finance API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo 'Backend build completed'",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "https-proxy-agent": "^7.0.6",
+    "node-cache": "^5.1.2",
+    "user-agents": "^1.1.605"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "keywords": ["stock", "finance", "yahoo finance", "etf", "analyzer"],
+  "author": "Auchukorn Veschapun",
+  "license": "MIT"
+}
